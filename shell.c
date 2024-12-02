@@ -1,7 +1,6 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,6 +12,7 @@
 
 #include "shell_cmd.h"
 #include "shell_program.h"
+#include "shell_signal.h"
 #include "tokenizer.h"
 
 /* Convenience macro to silence compiler warnings about unused function parameters. */
@@ -71,6 +71,8 @@ void init_shell()
         /* Save the current termios to a variable, so it can be restored later. */
         tcgetattr(shell_terminal, &shell_tmodes);
     }
+    
+    signal_init();
 }
 
 int main(unused int argc, unused char *argv[])

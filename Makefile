@@ -1,4 +1,4 @@
-SRCS=shell.c tokenizer.c shell_cmd.c shell_program.c
+SRCS=shell.c tokenizer.c shell_cmd.c shell_program.c shell_signal.c
 EXECUTABLES=shell
 
 CC=gcc

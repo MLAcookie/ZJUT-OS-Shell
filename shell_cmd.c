@@ -8,9 +8,8 @@
 #define ARRAY_SIZE(ARR) (sizeof(ARR) / sizeof((ARR)[0]))
 
 fun_desc_t cmd_table[] = {
-    {cmd_help, "?", "show this help menu"},
-    {cmd_pwd, "pwd", "show current working path"},
-    {cmd_cd, "cd", "change current working path"},
+    {cmd_help, "?", "show this help menu"},        {cmd_pwd, "pwd", "show current working path"},
+    {cmd_cd, "cd", "change current working path"}, {cmd_cls, "cls", "clean terminal content"},
     {cmd_exit, "exit", "exit the command shell"},
 };
 
@@ -25,7 +24,7 @@ int cmd_help(struct tokens *tokens)
     {
         printf("%s - %s\n", cmd_table[i].cmd, cmd_table[i].doc);
     }
-    return 1;
+    return EXIT_SUCCESS;
 }
 
 int cmd_pwd(struct tokens *tokens)
@@ -40,23 +39,29 @@ int cmd_pwd(struct tokens *tokens)
         fprintf(stderr, "show work path failed\n");
         return 1;
     }
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 int cmd_cd(struct tokens *tokens)
 {
     if (chdir(tokens_get_token(tokens, 1)) == 0)
     {
-        return 0;
+        return EXIT_SUCCESS;
     }
     else
     {
-        fprintf(stderr, "change work path failed\n");
-        return -1;
+        fprintf(stderr, "invaid argument\n");
+        return EXIT_FAILURE;
     }
+}
+
+int cmd_cls(struct tokens *tokens)
+{
+    printf("\033[2J\033[H");
+    return EXIT_SUCCESS;
 }
 
 int cmd_exit(struct tokens *tokens)
 {
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
