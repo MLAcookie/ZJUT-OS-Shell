@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "signal.h": "c",
+        "types.h": "c",
+        "fcntl.h": "c",
+        "ctype.h": "c",
+        "stdlib.h": "c",
+        "shell_cmd.h": "c",
+        "unistd.h": "c",
+        "errno.h": "c",
+        "stdbool.h": "c",
+        "typeinfo": "c"
+    }
+}
