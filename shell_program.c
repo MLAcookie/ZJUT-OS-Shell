@@ -122,6 +122,7 @@ char *program_get_full_path(const char *path)
     return NULL;
 }
 
+// 判断是否是后台启动
 bool program_check_background(struct tokens *tokens)
 {
     const char *end_token = tokens_get_token(tokens, tokens_get_length(tokens) - 1);
@@ -143,6 +144,6 @@ void program_execute(struct tokens *tokens)
         signal_child_init();
         exit(program_run(tokens));
     }
-    waitpid(child_pid, NULL, WUNTRACED);
+    waitpid(child_pid, NULL, WUNTRACED | (is_background ? WNOHANG : 0));
     tcsetpgrp(STDIN_FILENO, getpgrp());
 }
