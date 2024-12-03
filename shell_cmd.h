@@ -18,4 +18,5 @@ int cmd_exit(struct tokens *tokens);
 int cmd_pwd(struct tokens *tokens);
 int cmd_cd(struct tokens *tokens);
 int cmd_cls(struct tokens *tokens);
+int cmd_wait(struct tokens *tokens);
 int cmd_help(struct tokens *tokens);

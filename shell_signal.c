@@ -3,14 +3,19 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
-void signal_init(void)
+void signal_main_init(void)
 {
-    signal(SIGINT, signal_handle);
+    signal(SIGINT, SIG_IGN);
+    signal(SIGTSTP, SIG_IGN);
+    signal(SIGTTOU, SIG_IGN);
 }
 
-void signal_handle(int sig)
+void signal_child_init(void)
 {
-    fprintf(stdout, "SIG %d\n", sig);
+    signal(SIGINT, SIG_DFL);
+    signal(SIGTSTP, SIG_DFL);
+    signal(SIGTTOU, SIG_DFL);
 }

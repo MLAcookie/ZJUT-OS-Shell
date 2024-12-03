@@ -9,6 +9,9 @@
         "unistd.h": "c",
         "errno.h": "c",
         "stdbool.h": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "shell_program.h": "c",
+        "shell_signal.h": "c",
+        "wait.h": "c"
     }
 }

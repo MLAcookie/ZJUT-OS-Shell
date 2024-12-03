@@ -71,14 +71,13 @@ void init_shell()
         /* Save the current termios to a variable, so it can be restored later. */
         tcgetattr(shell_terminal, &shell_tmodes);
     }
-    
-    signal_init();
+
+    signal_main_init();
 }
 
 int main(unused int argc, unused char *argv[])
 {
     init_shell();
-
     static char line[4096];
     int line_num = 0;
 

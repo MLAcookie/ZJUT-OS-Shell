@@ -7,7 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <termios.h>
 #include <unistd.h>
+
+#include "shell_signal.h"
 
 char *program_get_full_path(const char *path);
 
@@ -92,11 +95,6 @@ char *program_get_full_path(const char *path)
     {
         return strdup(path);
     }
-    // 判断当前路径
-    else if (access(strcat(cwd, path), F_OK) == 0)
-    {
-        return strdup(cwd);
-    }
     // 判断path
     else
     {
@@ -124,22 +122,27 @@ char *program_get_full_path(const char *path)
     return NULL;
 }
 
+bool program_check_background(struct tokens *tokens)
+{
+    const char *end_token = tokens_get_token(tokens, tokens_get_length(tokens) - 1);
+    return strcmp(end_token, "&") == 0 ? true : false;
+}
+
 // 外部程序运行
 void program_execute(struct tokens *tokens)
 {
+    bool is_background = program_check_background(tokens);
     pid_t child_pid = fork();
-    if (child_pid < 0)
+    if (child_pid == 0)
     {
-        fprintf(stderr, "fork failed\n");
-        exit(1);
-    }
-    else if (child_pid == 0)
-    {
+        setpgrp();
+        if (!is_background)
+        {
+            tcsetpgrp(STDIN_FILENO, getpgrp());
+        }
+        signal_child_init();
         exit(program_run(tokens));
     }
-    else
-    {
-        int status;
-        waitpid(child_pid, &status, 0);
-    }
+    waitpid(child_pid, NULL, WUNTRACED);
+    tcsetpgrp(STDIN_FILENO, getpgrp());
 }
