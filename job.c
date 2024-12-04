@@ -10,6 +10,8 @@
 job all_jobs[MAX_JOBS];
 size_t job_count = 0;
 
+job *recent_job = NULL;
+
 void job_add(pid_t pid, bool is_background)
 {
     if (job_count < MAX_JOBS)
@@ -21,6 +23,7 @@ void job_add(pid_t pid, bool is_background)
             perror("tcgetattr failed");
             exit(EXIT_FAILURE);
         }
+        recent_job = &all_jobs[job_count];
         job_count++;
     }
     else
@@ -52,6 +55,7 @@ void job_wait_all(void)
 
 bool job_to_forground(job *job)
 {
+    job = job == NULL ? recent_job : job;
     if (job->is_background == false)
     {
         return false;
@@ -67,6 +71,7 @@ bool job_to_forground(job *job)
 
 bool job_resume(job *job)
 {
+    job = job == NULL ? recent_job : job;
     if (job->is_background == true)
     {
         return false;

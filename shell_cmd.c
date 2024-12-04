@@ -96,14 +96,18 @@ int cmd_wait(struct tokens *tokens)
 
 int cmd_fg(struct tokens *tokens)
 {
-    pid_t pid = atoi(tokens_get_token(tokens, 1));
-    job *p_job = job_find(pid);
-    bool flag;
-    if (p_job)
+    job *p_job;
+    if (tokens_get_length(tokens) == 1)
     {
-        flag = job_to_forground(p_job);
+        p_job = NULL;
     }
-    if (flag)
+    else
+    {
+        pid_t pid = atoi(tokens_get_token(tokens, 1));
+        p_job = job_find(pid);
+    }
+
+    if (job_to_forground(p_job))
     {
         return EXIT_SUCCESS;
     }
@@ -116,14 +120,18 @@ int cmd_fg(struct tokens *tokens)
 
 int cmd_bg(struct tokens *tokens)
 {
-    pid_t pid = atoi(tokens_get_token(tokens, 1));
-    job *p_job = job_find(pid);
-    bool flag;
-    if (p_job)
+    job *p_job;
+    if (tokens_get_length(tokens) == 1)
     {
-        flag = job_resume(p_job);
+        p_job = NULL;
     }
-    if (flag)
+    else
+    {
+        pid_t pid = atoi(tokens_get_token(tokens, 1));
+        p_job = job_find(pid);
+    }
+    
+    if (job_resume(p_job))
     {
         return EXIT_SUCCESS;
     }
