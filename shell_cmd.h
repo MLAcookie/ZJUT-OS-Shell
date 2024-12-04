@@ -13,6 +13,7 @@ typedef struct fun_desc
 extern fun_desc_t cmd_table[];
 
 int cmd_get_size(void);
+int cmd_lookup(char cmd[]);
 
 int cmd_exit(struct tokens *tokens);
 int cmd_pwd(struct tokens *tokens);

@@ -1,2 +1,5 @@
 *.o
+*.txt
 /shell
+/loop
+/print_stdin

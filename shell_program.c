@@ -34,15 +34,13 @@ int program_run(struct tokens *tokens)
         if (strcmp(temp, "<") == 0)
         {
             is_input_redirect = true;
-            char *p_file_path = tokens_get_token(tokens, i + 1);
-            strcat(input_file_path, program_get_full_path(p_file_path));
+            strcat(input_file_path, tokens_get_token(tokens, i + 1));
             break;
         }
         if (strcmp(temp, ">") == 0)
         {
             is_output_redirect = true;
-            char *p_file_path = tokens_get_token(tokens, i + 1);
-            strcat(output_file_path, program_get_full_path(p_file_path));
+            strcat(output_file_path, tokens_get_token(tokens, i + 1));
             break;
         }
         argv[i] = strdup(temp);
@@ -72,16 +70,13 @@ int program_run(struct tokens *tokens)
         dup2(fd, STDOUT_FILENO);
         close(fd);
     }
-
-    if (execv(argv[0], argv))
+    int status = execv(argv[0], argv);
+    if (status != 0)
     {
         fprintf(stderr, "%s failed\n", tokens_get_token(tokens, 0));
-        return EXIT_FAILURE;
+        fprintf(stderr, "exit: %d\n", status);
     }
-    else
-    {
-        return EXIT_SUCCESS;
-    }
+    return status;
 }
 
 // 获取完整路径名
@@ -129,21 +124,99 @@ bool program_check_background(struct tokens *tokens)
     return strcmp(end_token, "&") == 0 ? true : false;
 }
 
+int program_get_pipe_count(struct tokens *tokens)
+{
+    int count = 0;
+    for (int i = 0; i < tokens_get_length(tokens); i++)
+    {
+        if (strcmp(tokens_get_token(tokens, i), "|") == 0)
+        {
+            count++;
+        }
+    }
+    return count;
+}
+
+void program_close_all_pipe(int pipes[][2], int pipe_count)
+{
+    for (int i = 0; i < pipe_count; i++)
+    {
+        close(pipes[i][0]);
+        close(pipes[i][1]);
+    }
+}
+
 // 外部程序运行
 void program_execute(struct tokens *tokens)
 {
-    bool is_background = program_check_background(tokens);
-    pid_t child_pid = fork();
-    if (child_pid == 0)
+    int pipe_count = program_get_pipe_count(tokens);
+    int pipes[pipe_count + 1][2];
+    for (int i = 0; i < pipe_count; i++)
     {
-        setpgrp();
-        if (!is_background)
-        {
-            tcsetpgrp(STDIN_FILENO, getpgrp());
-        }
-        signal_child_init();
-        exit(program_run(tokens));
+        pipe(pipes[i]);
     }
-    waitpid(child_pid, NULL, WUNTRACED | (is_background ? WNOHANG : 0));
+    int start_index = 0;
+    int pipe_index = 0;
+    bool is_background = program_check_background(tokens);
+    size_t tokens_length = tokens_get_length(tokens);
+    // 如果是后台执行，就排除最后的&参数
+    tokens_length = is_background ? tokens_length - 1 : tokens_length;
+    pid_t pgid = 0;
+    pid_t child_pid;
+    for (int token_index = 0; token_index < tokens_length; token_index++)
+    {
+        if (strcmp(tokens_get_token(tokens, token_index), "|") == 0 || token_index == tokens_length - 1)
+        {
+            child_pid = fork();
+            if (child_pid == 0)
+            {
+                signal_child_init();
+                if (pipe_index == 0)
+                {
+                    pgid = getpid();
+                    setpgrp();
+                }
+                else
+                {
+                    setpgid(0, pgid);
+                }
+
+                if (pipe_index > 0)
+                {
+                    dup2(pipes[pipe_index - 1][0], STDIN_FILENO);
+                }
+                if (pipe_index < pipe_count)
+                {
+                    dup2(pipes[pipe_index][1], STDOUT_FILENO);
+                }
+                program_close_all_pipe(pipes, pipe_count);
+                // 最后一个token需要特别处理
+                size_t end_index = token_index == tokens_length - 1 ? tokens_length - 1 : token_index - 1;
+                struct tokens *sub_tokens = tokens_get_sub_tokens(tokens, start_index, end_index);
+                int status = program_run(sub_tokens);
+                tokens_destroy(sub_tokens);
+                exit(status);
+            }
+
+            if (pipe_index == 0)
+            {
+                setpgid(child_pid, child_pid);
+                pgid = child_pid;
+            }
+            else
+            {
+                setpgid(child_pid, pgid);
+            }
+            // 如果不是后台，就转移前台应用
+            if (!is_background)
+            {
+                tcsetpgrp(STDIN_FILENO, getpgrp());
+            }
+            start_index = token_index + 1;
+            pipe_index++;
+        }
+    }
+    program_close_all_pipe(pipes, pipe_count);
+    waitpid(-pgid, NULL, WUNTRACED | (is_background ? WNOHANG : 0));
     tcsetpgrp(STDIN_FILENO, getpgrp());
 }

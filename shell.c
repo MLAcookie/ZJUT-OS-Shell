@@ -30,19 +30,6 @@ struct termios shell_tmodes;
 /* Process group id for the shell */
 pid_t shell_pgid;
 
-/* Looks up the built-in command, if it exists. */
-int lookup(char cmd[])
-{
-    for (unsigned int i = 0; i < cmd_get_size(); i++)
-    {
-        if (cmd && (strcmp(cmd_table[i].cmd, cmd) == 0))
-        {
-            return i;
-        }
-    }
-    return -1;
-}
-
 /* Intialization procedures for this shell */
 void init_shell()
 {
@@ -93,7 +80,7 @@ int main(unused int argc, unused char *argv[])
         struct tokens *tokens = tokenize(line);
 
         /* Find which built-in function to run. */
-        int fundex = lookup(tokens_get_token(tokens, 0));
+        int fundex = cmd_lookup(tokens_get_token(tokens, 0));
 
         if (fundex >= 0)
         {

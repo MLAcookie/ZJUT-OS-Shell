@@ -2,6 +2,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <wait.h>
 
@@ -12,6 +13,18 @@ fun_desc_t cmd_table[] = {
     {cmd_help, "?", "show this help menu"},        {cmd_pwd, "pwd", "show current working path"},
     {cmd_cd, "cd", "change current working path"}, {cmd_cls, "cls", "clean terminal content"},
     {cmd_exit, "exit", "exit the command shell"},  {cmd_wait, "wait", "wait for all background processes to finish"}};
+
+int cmd_lookup(char cmd[])
+{
+    for (unsigned int i = 0; i < ARRAY_SIZE(cmd_table); i++)
+    {
+        if (cmd && (strcmp(cmd_table[i].cmd, cmd) == 0))
+        {
+            return i;
+        }
+    }
+    return -1;
+}
 
 int cmd_get_size()
 {

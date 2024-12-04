@@ -1,28 +1,34 @@
 SRCS=shell.c tokenizer.c shell_cmd.c shell_program.c shell_signal.c
 EXECUTABLES=shell
 
-TEST_SRC=loop.c
-TEST_EXECUTABLES=loop
+LOOP_SRC=loop.c
+LOOP_EXECUTABLES=loop
+
+PRINT_STDIN_SRC=print_stdin.c
+PRINT_STDIN_EXECUTABLES=print_stdin
 
 CC=gcc
 CFLAGS=-g3 -Wall -Werror -std=gnu99 
 
 OBJS=$(SRCS:.c=.o)
-TEST_OBJS=$(TEST_SRC:.c=.o)
+LOOP_OBJS=$(LOOP_SRC:.c=.o)
+PRINT_STDIN_OBJS=$(PRINT_STDIN_SRC:.c=.o)
 
-all: $(EXECUTABLES) $(TEST_EXECUTABLES)
-
+all: $(EXECUTABLES) $(LOOP_EXECUTABLES) $(PRINT_STDIN_EXECUTABLES) 
 $(EXECUTABLES): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $@
 
-$(TEST_EXECUTABLES): $(TEST_OBJS)
-	$(CC) $(CFLAGS) $(TEST_OBJS) -o $@
+$(LOOP_EXECUTABLES): $(LOOP_OBJS)
+	$(CC) $(CFLAGS) $(LOOP_OBJS) -o $@
 
-$(OTHER_EXECUTABLES): $(OTHER_SRC)
-	$(CC) $(CFLAGS) $(OTHER_SRC) -o $@
+$(PRINT_STDIN_EXECUTABLES): $(PRINT_STDIN_SRC)
+	$(CC) $(CFLAGS) $(PRINT_STDIN_SRC) -o $@
 
 .c.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(EXECUTABLES) $(OBJS) $(TEST_EXECUTABLES) $(TEST_OBJS)
+	rm -rf \
+	$(EXECUTABLES) $(OBJS) \
+	$(LOOP_EXECUTABLES) $(LOOP_OBJS) \
+	$(PRINT_STDIN_EXECUTABLES) $(PRINT_STDIN_OBJS) \

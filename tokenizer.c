@@ -1,5 +1,6 @@
 #include "tokenizer.h"
 #include <ctype.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -174,4 +175,16 @@ void tokens_destroy(struct tokens *tokens)
         free(tokens->tokens);
     }
     free(tokens);
+}
+
+struct tokens *tokens_get_sub_tokens(struct tokens *tokens, size_t start, size_t end)
+{
+    char buffer[4096];
+    buffer[0] = '\0';
+    for (size_t i = start; i <= end; i++)
+    {
+        strcat(buffer, " ");
+        strcat(buffer, tokens_get_token(tokens, i));
+    }
+    return tokenize(buffer);
 }
