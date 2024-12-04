@@ -10,6 +10,7 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "job.h"
 #include "shell_signal.h"
 
 char *program_get_full_path(const char *path);
@@ -151,6 +152,7 @@ void program_execute(struct tokens *tokens)
 {
     int pipe_count = program_get_pipe_count(tokens);
     int pipes[pipe_count + 1][2];
+    // pipe的初始化
     for (int i = 0; i < pipe_count; i++)
     {
         pipe(pipes[i]);
@@ -165,12 +167,17 @@ void program_execute(struct tokens *tokens)
     pid_t child_pid;
     for (int token_index = 0; token_index < tokens_length; token_index++)
     {
+        // 如果遇到 | 和末尾就运行
         if (strcmp(tokens_get_token(tokens, token_index), "|") == 0 || token_index == tokens_length - 1)
         {
             child_pid = fork();
+            // 最后一个token需要特别处理
+            size_t end_index = token_index == tokens_length - 1 ? tokens_length - 1 : token_index - 1;
+            struct tokens *sub_tokens = tokens_get_sub_tokens(tokens, start_index, end_index);
             if (child_pid == 0)
             {
                 signal_child_init();
+                // 子进程设置自己的进程组
                 if (pipe_index == 0)
                 {
                     pgid = getpid();
@@ -190,14 +197,10 @@ void program_execute(struct tokens *tokens)
                     dup2(pipes[pipe_index][1], STDOUT_FILENO);
                 }
                 program_close_all_pipe(pipes, pipe_count);
-                // 最后一个token需要特别处理
-                size_t end_index = token_index == tokens_length - 1 ? tokens_length - 1 : token_index - 1;
-                struct tokens *sub_tokens = tokens_get_sub_tokens(tokens, start_index, end_index);
                 int status = program_run(sub_tokens);
-                tokens_destroy(sub_tokens);
                 exit(status);
             }
-
+            // 父进程获取子进程组
             if (pipe_index == 0)
             {
                 setpgid(child_pid, child_pid);
@@ -207,16 +210,26 @@ void program_execute(struct tokens *tokens)
             {
                 setpgid(child_pid, pgid);
             }
-            // 如果不是后台，就转移前台应用
+            // 前后台处理
+            job_add(child_pid, is_background);
             if (!is_background)
             {
-                tcsetpgrp(STDIN_FILENO, getpgrp());
+                // 前台给到子进程组
+                tcsetpgrp(STDIN_FILENO, pgid);
             }
+            else
+            {
+                // 这行只用于fg/bg的debug测试，提交的话要注释掉
+                // fprintf(stdout, "background task: [%d] %s\n", child_pid, tokens_get_token(sub_tokens, 0));
+            }
+            tokens_destroy(sub_tokens);
             start_index = token_index + 1;
             pipe_index++;
         }
     }
     program_close_all_pipe(pipes, pipe_count);
+    // 如果是后台任务，就不阻塞等待
     waitpid(-pgid, NULL, WUNTRACED | (is_background ? WNOHANG : 0));
+    // 前台归还给shell
     tcsetpgrp(STDIN_FILENO, getpgrp());
 }

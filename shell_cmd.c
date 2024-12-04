@@ -1,4 +1,5 @@
 #include "shell_cmd.h"
+
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,13 +7,18 @@
 #include <unistd.h>
 #include <wait.h>
 
-#define unused __attribute__((unused))
+#include "job.h"
+
 #define ARRAY_SIZE(ARR) (sizeof(ARR) / sizeof((ARR)[0]))
 
-fun_desc_t cmd_table[] = {
-    {cmd_help, "?", "show this help menu"},        {cmd_pwd, "pwd", "show current working path"},
-    {cmd_cd, "cd", "change current working path"}, {cmd_cls, "cls", "clean terminal content"},
-    {cmd_exit, "exit", "exit the command shell"},  {cmd_wait, "wait", "wait for all background processes to finish"}};
+fun_desc_t cmd_table[] = {{cmd_help, "?", "show this help menu"},
+                          {cmd_pwd, "pwd", "show current working path"},
+                          {cmd_cd, "cd", "change current working path"},
+                          {cmd_cls, "cls", "clean terminal content"},
+                          {cmd_exit, "exit", "exit the command shell"},
+                          {cmd_wait, "wait", "wait for all background processes to finish"},
+                          {cmd_fg, "fg", "Move the process with id pid to the foreground"},
+                          {cmd_bg, "bg", "Resume a paused background process"}};
 
 int cmd_lookup(char cmd[])
 {
@@ -81,8 +87,49 @@ int cmd_exit(struct tokens *tokens)
 
 int cmd_wait(struct tokens *tokens)
 {
-    while (waitpid(-1, NULL, 0) > 0)
-    {
-    }
+    // while (waitpid(-1, NULL, 0) > 0)
+    // {
+    // }
+    job_wait_all();
     return EXIT_SUCCESS;
+}
+
+int cmd_fg(struct tokens *tokens)
+{
+    pid_t pid = atoi(tokens_get_token(tokens, 1));
+    job *p_job = job_find(pid);
+    bool flag;
+    if (p_job)
+    {
+        flag = job_to_forground(p_job);
+    }
+    if (flag)
+    {
+        return EXIT_SUCCESS;
+    }
+    else
+    {
+        fprintf(stdout, "this process has been forground");
+        return EXIT_FAILURE;
+    }
+}
+
+int cmd_bg(struct tokens *tokens)
+{
+    pid_t pid = atoi(tokens_get_token(tokens, 1));
+    job *p_job = job_find(pid);
+    bool flag;
+    if (p_job)
+    {
+        flag = job_resume(p_job);
+    }
+    if (flag)
+    {
+        return EXIT_SUCCESS;
+    }
+    else
+    {
+        fprintf(stdout, "this process has been background");
+        return EXIT_FAILURE;
+    }
 }
