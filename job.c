@@ -72,10 +72,6 @@ bool job_to_forground(job *job)
 bool job_resume(job *job)
 {
     job = job == NULL ? recent_job : job;
-    if (job->is_background == true)
-    {
-        return false;
-    }
     kill(job->pid, SIGCONT);
     job->is_background = true;
     return true;

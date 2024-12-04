@@ -151,7 +151,7 @@ void program_close_all_pipe(int pipes[][2], int pipe_count)
 void program_execute(struct tokens *tokens)
 {
     int pipe_count = program_get_pipe_count(tokens);
-    int pipes[pipe_count + 1][2];
+    int pipes[pipe_count][2];
     // pipe的初始化
     for (int i = 0; i < pipe_count; i++)
     {
