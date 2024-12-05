@@ -10,6 +10,8 @@
 void signal_main_init(void)
 {
     signal(SIGINT, SIG_IGN);
+    signal(SIGTERM, SIG_IGN);
+    signal(SIGQUIT, SIG_IGN);
     signal(SIGTSTP, SIG_IGN);
     signal(SIGTTOU, SIG_IGN);
 }
@@ -18,6 +20,8 @@ void signal_main_init(void)
 void signal_child_init(void)
 {
     signal(SIGINT, SIG_DFL);
+    signal(SIGTERM, SIG_DFL);
+    signal(SIGQUIT, SIG_DFL);
     signal(SIGTSTP, SIG_DFL);
     signal(SIGTTOU, SIG_DFL);
 }

@@ -87,9 +87,6 @@ int cmd_exit(struct tokens *tokens)
 
 int cmd_wait(struct tokens *tokens)
 {
-    // while (waitpid(-1, NULL, 0) > 0)
-    // {
-    // }
     job_wait_all();
     return EXIT_SUCCESS;
 }
@@ -106,16 +103,8 @@ int cmd_fg(struct tokens *tokens)
         pid_t pid = atoi(tokens_get_token(tokens, 1));
         p_job = job_find(pid);
     }
-
-    if (job_to_forground(p_job))
-    {
-        return EXIT_SUCCESS;
-    }
-    else
-    {
-        fprintf(stdout, "this process has been forground");
-        return EXIT_FAILURE;
-    }
+    job_to_forground(p_job);
+    return EXIT_SUCCESS;
 }
 
 int cmd_bg(struct tokens *tokens)
@@ -130,14 +119,6 @@ int cmd_bg(struct tokens *tokens)
         pid_t pid = atoi(tokens_get_token(tokens, 1));
         p_job = job_find(pid);
     }
-    
-    if (job_resume(p_job))
-    {
-        return EXIT_SUCCESS;
-    }
-    else
-    {
-        fprintf(stdout, "this process has been background");
-        return EXIT_FAILURE;
-    }
+    job_resume(p_job);
+    return EXIT_SUCCESS;
 }

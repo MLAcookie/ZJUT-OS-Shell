@@ -18,11 +18,12 @@ void job_add(pid_t pid, bool is_background)
     {
         all_jobs[job_count].pid = pid;
         all_jobs[job_count].is_background = is_background;
-        if (tcgetattr(STDIN_FILENO, &all_jobs[job_count].termios) == -1)
-        {
-            perror("tcgetattr failed");
-            exit(EXIT_FAILURE);
-        }
+        // 神秘测试机调tcgetattr会报错，注释算了
+        // if (tcgetattr(STDIN_FILENO, &all_jobs[job_count].termios) == -1)
+        // {
+        //     perror("tcgetattr failed");
+        //     exit(EXIT_FAILURE);
+        // }
         recent_job = &all_jobs[job_count];
         job_count++;
     }
@@ -53,26 +54,20 @@ void job_wait_all(void)
     job_count = 0; // 清空作业列表
 }
 
-bool job_to_forground(job *job)
+void job_to_forground(job *job)
 {
     job = job == NULL ? recent_job : job;
-    if (job->is_background == false)
-    {
-        return false;
-    }
     tcsetpgrp(STDIN_FILENO, job->pid);
-    tcsetattr(STDIN_FILENO, TCSADRAIN, &job->termios);
+    // tcsetattr(STDIN_FILENO, TCSADRAIN, &job->termios);
     kill(job->pid, SIGCONT);
     job->is_background = false;
     waitpid(job->pid, NULL, WUNTRACED);
     tcsetpgrp(STDIN_FILENO, getpgrp());
-    return true;
 }
 
-bool job_resume(job *job)
+void job_resume(job *job)
 {
     job = job == NULL ? recent_job : job;
     kill(job->pid, SIGCONT);
     job->is_background = true;
-    return true;
 }

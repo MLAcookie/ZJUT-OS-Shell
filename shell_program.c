@@ -36,13 +36,15 @@ int program_run(struct tokens *tokens)
         {
             is_input_redirect = true;
             strcat(input_file_path, tokens_get_token(tokens, i + 1));
-            break;
+            i++;
+            continue;
         }
         if (strcmp(temp, ">") == 0)
         {
             is_output_redirect = true;
             strcat(output_file_path, tokens_get_token(tokens, i + 1));
-            break;
+            i++;
+            continue;
         }
         argv[i] = strdup(temp);
         argv_count++;
