@@ -49,6 +49,7 @@ void job_wait_all(void)
 {
     for (int i = 0; i < job_count; ++i)
     {
+        fprintf(stdout, "wait PID: %d\n", all_jobs[i].pid);
         waitpid(all_jobs[i].pid, NULL, 0);
     }
     job_count = 0; // 清空作业列表

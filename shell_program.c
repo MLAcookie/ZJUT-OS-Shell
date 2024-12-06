@@ -202,16 +202,16 @@ void program_execute(struct tokens *tokens)
                 int status = program_run(sub_tokens);
                 exit(status);
             }
-            // 父进程获取子进程组
-            if (pipe_index == 0)
-            {
-                setpgid(child_pid, child_pid);
-                pgid = child_pid;
-            }
-            else
-            {
-                setpgid(child_pid, pgid);
-            }
+            // 貌似比较重复，先注释了
+            // if (pipe_index == 0)
+            // {
+            //     setpgid(child_pid, child_pid);
+            //     pgid = child_pid;
+            // }
+            // else
+            // {
+            //     setpgid(child_pid, pgid);
+            // }
             // 前后台处理
             job_add(child_pid, is_background);
             if (!is_background)
