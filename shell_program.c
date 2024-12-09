@@ -21,6 +21,11 @@ int program_run(struct tokens *tokens)
     char *argv[64];
     int argv_count = 1;
     argv[0] = program_get_full_path(tokens_get_token(tokens, 0));
+    if (argv[0] == NULL)
+    {
+        fprintf(stderr, "execv: No such file or directory\n");
+        return EXIT_FAILURE;
+    }
 
     bool is_input_redirect = false;
     bool is_output_redirect = false;
@@ -202,16 +207,15 @@ void program_execute(struct tokens *tokens)
                 int status = program_run(sub_tokens);
                 exit(status);
             }
-            // 貌似比较重复，先注释了
-            // if (pipe_index == 0)
-            // {
-            //     setpgid(child_pid, child_pid);
-            //     pgid = child_pid;
-            // }
-            // else
-            // {
-            //     setpgid(child_pid, pgid);
-            // }
+            if (pipe_index == 0)
+            {
+                setpgid(child_pid, child_pid);
+                pgid = child_pid;
+            }
+            else
+            {
+                setpgid(child_pid, pgid);
+            }
             // 前后台处理
             job_add(child_pid, is_background);
             if (!is_background)

@@ -55,7 +55,7 @@ int cmd_pwd(struct tokens *tokens)
     }
     else
     {
-        fprintf(stderr, "show work path failed\n");
+        fprintf(stderr, "pwd: show work path failed\n");
         return 1;
     }
     return EXIT_SUCCESS;
@@ -69,7 +69,7 @@ int cmd_cd(struct tokens *tokens)
     }
     else
     {
-        fprintf(stderr, "invaid argument\n");
+        fprintf(stderr, "cd: No such file or directory\n");
         return EXIT_FAILURE;
     }
 }
