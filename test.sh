@@ -112,15 +112,10 @@ test_comprehensive_piping() {
   run_test "ls -l | grep '.c' | wc -l" "$(ls -l | grep '.c' | wc -l)"
 }
 
-test_process_groups() {
-  echo "Testing process groups..."
-  echo "TODO"
-}
-
-# Test case for signal handling
-test_signal_handling() {
-  echo "Testing signal handling..."
-  echo "TODO"
+test_background_process() {
+  echo "Testing background processes..."
+  echo "it will take up to 6s"
+  run_test "./loop 4 &" "$(./loop 4 &)"
 }
 
 test_change_directory
@@ -132,7 +127,7 @@ test_redirect_standard_output
 test_pipe_once
 test_pipe_deep_depth
 test_comprehensive_piping
-
+test_background_process
 
 
 if [ "$fail_count" -eq "0" ]; then
